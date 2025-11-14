@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>My Spaces • Portal-UI</title>
+    <meta name="description" content="Manage your spaces and invitations" />
+    <link rel="icon" href="./assets/icons/favicon.ico" />
+    <link rel="stylesheet" href="./css/styles.css" />
+    <style>
+      .space-card {
+        background: var(--panel);
+        border: 1px solid #1f2937;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+      }
+      .space-card h3 {
+        margin-top: 0;
+        color: var(--accent);
+      }
+      .space-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+      }
+      .space-actions button {
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        border: 1px solid #334155;
+        background: #0b1020;
+        color: var(--text);
+        cursor: pointer;
+        font-size: 0.9rem;
+      }
+      .space-actions button:hover {
+        background: #1f2937;
+      }
+      .invitation-code {
+        background: #0b1020;
+        border: 1px solid #334155;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-family: 'Courier New', monospace;
+        font-size: 1.1rem;
+        letter-spacing: 2px;
+        display: inline-block;
+        margin: 0.5rem 0;
+      }
+      .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.8);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      }
+      .modal.show {
+        display: flex;
+      }
+      .modal-content {
+        background: var(--panel);
+        border: 1px solid #1f2937;
+        border-radius: 12px;
+        padding: 2rem;
+        max-width: 500px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+      }
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+      }
+      .modal-close {
+        background: transparent;
+        border: none;
+        color: var(--muted);
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 0;
+        width: 32px;
+        height: 32px;
+      }
+      .member-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      .member-item {
+        background: #0b1020;
+        border: 1px solid #334155;
+        padding: 0.75rem;
+        border-radius: 6px;
+        margin-bottom: 0.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .role-badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-weight: 600;
+      }
+      .role-owner { background: #22c55e; color: #052e16; }
+      .role-admin { background: #3b82f6; color: #1e3a8a; }
+      .role-member { background: #6b7280; color: #111827; }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container hdr">
+        <a class="logo" href="./">Portal-UI</a>
+        <nav class="nav" id="site-nav" aria-label="Primary">
+          <a href="./dashboard.html">Dashboard</a>
+          <a href="./spaces.html" aria-current="page">Spaces</a>
+          <a href="#" onclick="logout(); return false;">Logout</a>
+        </nav>
+        <button class="nav-toggle" aria-controls="site-nav" aria-expanded="false" aria-label="Toggle navigation">☰</button>
+      </div>
+    </header>
+
+    <main class="container pad">
+      <div style="max-width: 900px; margin: 0 auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+          <div>
+            <h1>🏢 My Spaces</h1>
+            <p style="color: var(--muted);">Manage your workspaces and team invitations</p>
+          </div>
+          <button class="btn" onclick="showCreateSpaceModal()">
+            ➕ Create Space
+          </button>
+        </div>
+
+        <div id="message" class="message" style="display: none;"></div>
+
+        <div id="spacesList">
+          <p style="text-align: center; color: var(--muted); padding: 3rem;">
+            Loading spaces...
+          </p>
+        </div>
+      </div>
+    </main>
+
+    <!-- Create Space Modal -->
+    <div id="createSpaceModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 style="margin: 0;">Create New Space</h2>
+          <button class="modal-close" onclick="hideCreateSpaceModal()">×</button>
+        </div>
+        <form id="createSpaceForm" class="card" style="border: none; padding: 0;">
+          <label>
+            Space Name *
+            <input type="text" id="space_name" name="space_name" required maxlength="100" placeholder="My Team Workspace" />
+          </label>
+          
+          <label>
+            Description
+            <textarea id="space_description" name="space_description" rows="3" placeholder="What is this space for?"></textarea>
+          </label>
+          
+          <label>
+            Max Members (optional)
+            <input type="number" id="max_members" name="max_members" min="1" max="1000" placeholder="Unlimited if empty" />
+            <small style="color: var(--muted);">Leave empty for unlimited members</small>
+          </label>
+          
+          <label>
+            Invitation Code Expires (optional)
+            <input type="datetime-local" id="code_expires" name="code_expires" />
+            <small style="color: var(--muted);">Leave empty for no expiration</small>
+          </label>
+          
+          <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+            <button type="submit" class="btn" style="flex: 1;">Create Space</button>
+            <button type="button" onclick="hideCreateSpaceModal()" style="flex: 1; background: transparent; border: 1px solid #334155; color: var(--text); padding: 0.75rem 1rem; border-radius: 10px; cursor: pointer;">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- View Members Modal -->
+    <div id="viewMembersModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 style="margin: 0;" id="membersModalTitle">Space Members</h2>
+          <button class="modal-close" onclick="hideMembersModal()">×</button>
+        </div>
+        <div id="membersList">
+          <p style="text-align: center; color: var(--muted);">Loading members...</p>
+        </div>
+      </div>
+    </div>
+
+    <script src="./js/spaces.js"></script>
+  </body>
+</html>

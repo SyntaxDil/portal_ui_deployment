@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dashboard • Portal-UI</title>
+    <meta name="description" content="Portal-UI Dashboard" />
+    <link rel="icon" href="./assets/icons/favicon.ico" />
+    <link rel="stylesheet" href="./css/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container hdr">
+        <a class="logo" href="./">Portal-UI</a>
+        <nav class="nav" id="site-nav" aria-label="Primary">
+          <a aria-current="page" href="./dashboard.html">Dashboard</a>
+          <a href="./spaces.html">Spaces</a>
+          <a href="#" id="logoutLink">Logout</a>
+        </nav>
+        <button class="nav-toggle" aria-controls="site-nav" aria-expanded="false" aria-label="Toggle navigation">☰</button>
+      </div>
+    </header>
+
+    <main class="container pad">
+      <div id="loading" style="text-align: center; padding: 3rem;">
+        <p>Loading...</p>
+      </div>
+
+      <div id="dashboardContent" style="display: none;">
+        <h1>Welcome, <span id="userName"></span>!</h1>
+        <p style="color: var(--muted); margin-bottom: 2rem;">Manage your Portal-UI account and spaces</p>
+
+        <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+          <div class="card">
+            <h3 style="margin-top: 0;">👤 Account Info</h3>
+            <div id="accountInfo"></div>
+          </div>
+          
+          <div class="card">
+            <h3 style="margin-top: 0;">🏢 My Spaces</h3>
+            <div id="spacesInfo">
+              <p style="color: var(--muted);">Loading spaces...</p>
+            </div>
+            <a href="./spaces.html" class="btn" style="width: 100%; margin-top: 1rem; display: inline-block; text-align: center;">
+              Manage Spaces
+            </a>
+          </div>
+          
+          <div class="card">
+            <h3 style="margin-top: 0;">⚡ Quick Actions</h3>
+            <button class="btn" style="width: 100%; margin-bottom: 0.5rem;" onclick="alert('Profile editing coming soon!')">
+              Edit Profile
+            </button>
+            <a href="./change-password.html" class="btn" style="width: 100%; display: inline-block; text-align: center; background: var(--panel); border: 1px solid var(--accent);">
+              Change Password
+            </a>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p>© <span id="year"></span> Portal-UI. All rights reserved.</p>
+      </div>
+    </footer>
+
+    <script src="./js/main.js"></script>
+    <script src="./js/auth.js"></script>
+  </body>
+</html>

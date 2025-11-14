@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Contact • Portal-UI</title>
+    <meta name="description" content="Contact Portal-UI" />
+    <link rel="icon" href="./assets/icons/favicon.ico" />
+    <link rel="stylesheet" href="./css/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container hdr">
+        <a class="logo" href="./">Portal-UI</a>
+        <nav class="nav" id="site-nav" aria-label="Primary">
+          <a href="./about.html">About</a>
+          <a aria-current="page" href="./contact.html">Contact</a>
+        </nav>
+        <button class="nav-toggle" aria-controls="site-nav" aria-expanded="false" aria-label="Toggle navigation">☰</button>
+      </div>
+    </header>
+
+    <main class="container pad">
+      <h1>Contact</h1>
+      <p>Use the form below or email us directly.</p>
+
+      <!-- Default: mailto. Replace you@example.com with your address. -->
+      <form class="card" id="contact-form" action="mailto:you@example.com" method="POST" enctype="text/plain">
+        <label>
+          Name
+          <input name="name" type="text" required />
+        </label>
+        <label>
+          Email
+          <input name="email" type="email" required />
+        </label>
+        <label>
+          Message
+          <textarea name="message" rows="5" required></textarea>
+        </label>
+        <button class="btn" type="submit">Send</button>
+      </form>
+
+      <!-- Optional alternative: Formspree (recommended). Create a form and replace the action URL. -->
+      <!--
+      <form class="card" action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
+        <label>
+          Name
+          <input name="name" type="text" required />
+        </label>
+        <label>
+          Email
+          <input name="email" type="email" required />
+        </label>
+        <label>
+          Message
+          <textarea name="message" rows="5" required></textarea>
+        </label>
+        <button class="btn" type="submit">Send</button>
+      </form>
+      -->
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p>© <span id="year"></span> Portal-UI.</p>
+      </div>
+    </footer>
+
+    <script src="./js/main.js"></script>
+  </body>
+  </html>

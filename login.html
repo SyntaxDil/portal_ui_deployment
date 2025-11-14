@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Login • Portal-UI</title>
+    <meta name="description" content="Login to Portal-UI" />
+    <link rel="icon" href="./assets/icons/favicon.ico" />
+    <link rel="stylesheet" href="./css/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container hdr">
+        <a class="logo" href="./">Portal-UI</a>
+        <nav class="nav" id="site-nav" aria-label="Primary">
+          <a href="./about.html">About</a>
+          <a href="./contact.html">Contact</a>
+          <a href="./register.html">Register</a>
+        </nav>
+        <button class="nav-toggle" aria-controls="site-nav" aria-expanded="false" aria-label="Toggle navigation">☰</button>
+      </div>
+    </header>
+
+    <main class="container pad">
+      <div style="max-width: 450px; margin: 0 auto;">
+        <h1>Login</h1>
+        <p style="color: var(--muted); margin-bottom: 2rem;">Access your Portal-UI account</p>
+
+        <div id="message" class="message" style="display: none;"></div>
+
+        <form id="loginForm" class="card">
+          <label>
+            Email
+            <input type="email" id="email" name="email" required autocomplete="email" />
+          </label>
+          <label>
+            Password
+            <input type="password" id="password" name="password" required autocomplete="current-password" />
+          </label>
+          <label style="display: flex; align-items: center; gap: 0.5rem; flex-direction: row;">
+            <input type="checkbox" id="rememberMe" name="rememberMe" style="width: auto; margin: 0;" />
+            <span style="font-weight: normal;">Remember me for 30 days</span>
+          </label>
+          <button type="submit" class="btn">Login</button>
+          <p style="text-align: center; margin-top: 1rem;">
+            <a href="#" id="forgotPassword" style="color: var(--accent);">Forgot password?</a>
+          </p>
+          <p style="text-align: center; margin-top: 0.5rem; color: var(--muted);">
+            Don't have an account? <a href="./register.html" style="color: var(--accent);">Register</a>
+          </p>
+        </form>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p>© <span id="year"></span> Portal-UI. All rights reserved.</p>
+      </div>
+    </footer>
+
+    <script src="./js/main.js"></script>
+    <script src="./js/auth.js"></script>
+  </body>
+</html>

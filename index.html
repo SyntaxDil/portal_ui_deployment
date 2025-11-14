@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Portal-UI</title>
+    <meta name="description" content="Portal-UI landing page" />
+    <link rel="icon" href="./assets/icons/favicon.ico" />
+    <link rel="stylesheet" href="./css/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container hdr">
+        <a class="logo" href="./">Portal-UI</a>
+        <nav class="nav" id="site-nav" aria-label="Primary">
+          <a href="./about.html">About</a>
+          <a href="./contact.html">Contact</a>
+          <a href="./login.html">Login</a>
+        </nav>
+        <button class="nav-toggle" aria-controls="site-nav" aria-expanded="false" aria-label="Toggle navigation">☰</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="container">
+          <h1>Welcome to Portal-UI</h1>
+          <p>Clean, fast, and ready to deploy on GoDaddy.</p>
+          <p>
+            <a class="btn" href="./login.html">Login</a>
+            <a class="btn" href="./register.html" style="background: var(--panel); border: 1px solid var(--accent); margin-left: 0.5rem;">Register</a>
+          </p>
+        </div>
+      </section>
+
+      <section class="features">
+        <div class="container grid">
+          <div class="feature">
+            <h3>Static & Portable</h3>
+            <p>No backend required. Upload and go.</p>
+          </div>
+          <div class="feature">
+            <h3>Responsive</h3>
+            <p>Looks great on phones, tablets, and desktops.</p>
+          </div>
+          <div class="feature">
+            <h3>Easy Deploy</h3>
+            <p>Zip and upload to <code>public_html</code>.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p>© <span id="year"></span> Portal-UI. All rights reserved.</p>
+      </div>
+    </footer>
+
+    <script src="./js/main.js"></script>
+  </body>
+  </html>

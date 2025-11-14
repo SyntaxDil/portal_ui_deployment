@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Register • Portal-UI</title>
+    <meta name="description" content="Create your Portal-UI account" />
+    <link rel="icon" href="./assets/icons/favicon.ico" />
+    <link rel="stylesheet" href="./css/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container hdr">
+        <a class="logo" href="./">Portal-UI</a>
+        <nav class="nav" id="site-nav" aria-label="Primary">
+          <a href="./about.html">About</a>
+          <a href="./contact.html">Contact</a>
+          <a href="./login.html">Login</a>
+        </nav>
+        <button class="nav-toggle" aria-controls="site-nav" aria-expanded="false" aria-label="Toggle navigation">☰</button>
+      </div>
+    </header>
+
+    <main class="container pad">
+      <div style="max-width: 450px; margin: 0 auto;">
+        <h1>Register</h1>
+        <p style="color: var(--muted); margin-bottom: 2rem;">Create your Portal-UI account</p>
+
+        <div id="message" class="message" style="display: none;"></div>
+
+        <form id="registerForm" class="card">
+          <label>
+            Full Name *
+            <input type="text" id="fullName" name="fullName" required autocomplete="name" />
+          </label>
+          <label>
+            Email *
+            <input type="email" id="email" name="email" required autocomplete="email" />
+          </label>
+          <label>
+            Password *
+            <input type="password" id="password" name="password" required autocomplete="new-password" minlength="8" />
+            <small style="color: var(--muted); display: block; margin-top: 0.25rem;">At least 8 characters</small>
+          </label>
+          <label>
+            Confirm Password *
+            <input type="password" id="confirmPassword" name="confirmPassword" required autocomplete="new-password" />
+          </label>
+          <label>
+            Invitation Code (Optional)
+            <input 
+              type="text" 
+              id="invitationCode" 
+              name="invitationCode" 
+              placeholder="Enter space invitation code"
+              maxlength="12"
+              style="text-transform: uppercase;"
+            />
+            <small id="codeValidation" style="display: block; margin-top: 0.25rem; min-height: 1.2em;"></small>
+          </label>
+          <label style="display: flex; align-items: flex-start; gap: 0.5rem; flex-direction: row;">
+            <input type="checkbox" id="termsAccept" name="termsAccept" required style="width: auto; margin-top: 0.25rem;" />
+            <span style="font-weight: normal; font-size: 0.9rem;">
+              I agree to the <a href="#" style="color: var(--accent);">Terms of Service</a> and <a href="#" style="color: var(--accent);">Privacy Policy</a>
+            </span>
+          </label>
+          <button type="submit" class="btn">Create Account</button>
+          <p style="text-align: center; margin-top: 1rem; color: var(--muted);">
+            Already have an account? <a href="./login.html" style="color: var(--accent);">Login</a>
+          </p>
+        </form>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p>© <span id="year"></span> Portal-UI. All rights reserved.</p>
+      </div>
+    </footer>
+
+    <script src="./js/main.js"></script>
+    <script src="./js/auth.js"></script>
+  </body>
+</html>
