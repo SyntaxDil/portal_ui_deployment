@@ -167,6 +167,14 @@
             Description
             <textarea id="space_description" name="space_description" rows="3" placeholder="What is this space for?"></textarea>
           </label>
+
+          <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; padding: 1rem; background: var(--panel); border: 1px solid #1f2937; border-radius: 8px;">
+            <input type="checkbox" id="is_public" name="is_public" style="width: 20px; height: 20px; cursor: pointer;" />
+            <div>
+              <div style="font-weight: 500;">🌍 Make this space public</div>
+              <small style="color: var(--muted);">Public spaces can be joined by anyone. Private spaces require an invitation code.</small>
+            </div>
+          </label>
           
           <label>
             Max Members (optional)
@@ -203,6 +211,8 @@
       </div>
     </div>
 
+    <script src="./js/config.js"></script>
+    <script src="./js/auth-new.js"></script>
     <script src="./js/spaces.js"></script>
   </body>
 </html>

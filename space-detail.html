@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Space • Portal-UI</title>
+    <meta name="description" content="Space workspace" />
+    <link rel="icon" href="./assets/icons/favicon.ico" />
+    <link rel="stylesheet" href="./css/styles.css" />
+    <style>
+      .space-header {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        border: 1px solid #1f2937;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+      }
+      .space-title {
+        font-size: 2rem;
+        margin: 0 0 0.5rem 0;
+        color: var(--accent);
+      }
+      .space-description {
+        color: var(--muted);
+        margin: 0;
+      }
+      .widget-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+      }
+      .widget-card {
+        background: var(--panel);
+        border: 1px solid #1f2937;
+        border-radius: 12px;
+        padding: 1.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+      .widget-card:hover {
+        border-color: var(--accent);
+        transform: translateY(-2px);
+      }
+      .widget-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+      }
+      .widget-title {
+        font-size: 1.2rem;
+        margin: 0 0 0.5rem 0;
+        color: var(--text);
+      }
+      .widget-desc {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+      .space-tabs {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        border-bottom: 2px solid #1f2937;
+      }
+      .tab {
+        padding: 1rem 1.5rem;
+        cursor: pointer;
+        border: none;
+        background: none;
+        color: var(--muted);
+        font-size: 1rem;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -2px;
+        transition: all 0.3s ease;
+      }
+      .tab:hover {
+        color: var(--text);
+      }
+      .tab.active {
+        color: var(--accent);
+        border-bottom-color: var(--accent);
+      }
+      .content-section {
+        display: none;
+      }
+      .content-section.active {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="container">
+        <a href="./dashboard.html" class="logo">🏔️ Portal-UI</a>
+        <nav class="nav">
+          <a href="./dashboard.html">Dashboard</a>
+          <a href="./spaces.html">Spaces</a>
+          <a href="./login.html" onclick="event.preventDefault(); logout();">Logout</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <div id="spaceHeader" class="space-header">
+        <h1 class="space-title" id="spaceName">Loading...</h1>
+        <p class="space-description" id="spaceDescription"></p>
+      </div>
+
+      <div class="space-tabs">
+        <button class="tab active" onclick="switchTab('overview')">📊 Overview</button>
+        <button class="tab" onclick="switchTab('widgets')">🧩 Add Widgets</button>
+        <button class="tab" onclick="switchTab('members')">👥 Members</button>
+        <button class="tab" onclick="switchTab('settings')">⚙️ Settings</button>
+      </div>
+
+      <div id="overview" class="content-section active">
+        <div class="card">
+          <h2>👋 Welcome to Your Space!</h2>
+          <p>This is your brand new workspace. Get started by adding some widgets or inviting team members.</p>
+          
+          <div style="margin-top: 2rem;">
+            <h3>Quick Actions</h3>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
+              <button class="btn" onclick="switchTab('widgets')">➕ Add Widgets</button>
+              <button class="btn" onclick="copyInvitationCode()">📋 Copy Invitation Code</button>
+              <button class="btn" onclick="switchTab('members')">👥 Invite Members</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="widgets" class="content-section">
+        <div class="card">
+          <h2>Add Widgets to Your Space</h2>
+          <p>Customize your workspace by adding widgets</p>
+          
+          <div class="widget-grid">
+            <div class="widget-card" onclick="addWidget('chat')">
+              <div class="widget-icon">💬</div>
+              <h3 class="widget-title">Chat Box</h3>
+              <p class="widget-desc">Real-time chat for team communication</p>
+            </div>
+            
+            <div class="widget-card" onclick="addWidget('links')">
+              <div class="widget-icon">🔗</div>
+              <h3 class="widget-title">Website Links</h3>
+              <p class="widget-desc">Quick access to important URLs</p>
+            </div>
+            
+            <div class="widget-card" onclick="addWidget('files')">
+              <div class="widget-icon">📁</div>
+              <h3 class="widget-title">File Storage</h3>
+              <p class="widget-desc">Upload and share files with your team</p>
+            </div>
+            
+            <div class="widget-card" onclick="addWidget('calendar')">
+              <div class="widget-icon">📅</div>
+              <h3 class="widget-title">Calendar</h3>
+              <p class="widget-desc">Schedule events and meetings</p>
+            </div>
+            
+            <div class="widget-card" onclick="addWidget('tasks')">
+              <div class="widget-icon">✅</div>
+              <h3 class="widget-title">Task Board</h3>
+              <p class="widget-desc">Manage tasks and track progress</p>
+            </div>
+            
+            <div class="widget-card" onclick="addWidget('notes')">
+              <div class="widget-icon">📝</div>
+              <h3 class="widget-title">Shared Notes</h3>
+              <p class="widget-desc">Collaborative note-taking</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="members" class="content-section">
+        <div class="card">
+          <h2>Space Members</h2>
+          <div id="membersList">
+            <p style="text-align: center; color: var(--muted);">Loading members...</p>
+          </div>
+          
+          <div style="margin-top: 2rem;">
+            <h3>Invitation Code</h3>
+            <div style="background: #0b1020; border: 1px solid #334155; padding: 1rem; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; margin-top: 1rem;">
+              <code id="invitationCode" style="font-size: 1.2rem; letter-spacing: 2px; color: var(--accent);">Loading...</code>
+              <button class="btn" onclick="copyInvitationCode()">📋 Copy</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="settings" class="content-section">
+        <div class="card">
+          <h2>Space Settings</h2>
+          <p>Coming soon...</p>
+        </div>
+      </div>
+    </main>
+
+    <script src="./js/config.js"></script>
+    <script src="./js/auth-new.js"></script>
+    <script>
+      let currentSpace = null;
+
+      // Get space ID from URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const spaceId = urlParams.get('id');
+
+      if (!spaceId) {
+        window.location.href = './spaces.html';
+      }
+
+      // Load space details
+      async function loadSpaceDetails() {
+        const user = getLoggedInUser();
+        if (!user) {
+          window.location.href = './login.html';
+          return;
+        }
+
+        try {
+          const response = await fetch(`/.netlify/functions/spaces?action=list`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: user.id })
+          });
+          
+          const data = await response.json();
+          
+          if (data.success) {
+            currentSpace = data.spaces.find(s => s.id == spaceId);
+            
+            if (!currentSpace) {
+              showToast('Space not found', 'error');
+              window.location.href = './spaces.html';
+              return;
+            }
+            
+            displaySpaceDetails();
+            loadMembers();
+          }
+        } catch (error) {
+          console.error('Error loading space:', error);
+          showToast('Failed to load space', 'error');
+        }
+      }
+
+      function displaySpaceDetails() {
+        document.getElementById('spaceName').textContent = currentSpace.name;
+        document.getElementById('spaceDescription').textContent = currentSpace.description || 'No description';
+        document.getElementById('invitationCode').textContent = currentSpace.invitation_code;
+        document.title = `${currentSpace.name} • Portal-UI`;
+      }
+
+      async function loadMembers() {
+        const user = getLoggedInUser();
+        if (!user) return;
+
+        try {
+          const response = await fetch(`/.netlify/functions/spaces?action=members&space_id=${spaceId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: user.id })
+          });
+          
+          const data = await response.json();
+          
+          if (data.success) {
+            displayMembers(data.members);
+          }
+        } catch (error) {
+          console.error('Error loading members:', error);
+        }
+      }
+
+      function displayMembers(members) {
+        const container = document.getElementById('membersList');
+        
+        if (members.length === 0) {
+          container.innerHTML = '<p style="text-align: center; color: var(--muted);">No members yet</p>';
+          return;
+        }
+        
+        container.innerHTML = members.map(member => `
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: #0b1020; border: 1px solid #334155; border-radius: 8px; margin-bottom: 0.5rem;">
+            <div>
+              <div style="font-weight: 500;">${member.username}</div>
+              <div style="color: var(--muted); font-size: 0.9rem;">${member.email}</div>
+            </div>
+            <span style="background: ${member.role === 'owner' ? '#22c55e' : '#3b82f6'}; padding: 0.25rem 0.75rem; border-radius: 6px; font-size: 0.85rem;">
+              ${member.role}
+            </span>
+          </div>
+        `).join('');
+      }
+
+      function switchTab(tabName) {
+        // Update tab buttons
+        document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+        event.target.classList.add('active');
+        
+        // Update content sections
+        document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
+        document.getElementById(tabName).classList.add('active');
+      }
+
+      function copyInvitationCode() {
+        const code = currentSpace.invitation_code;
+        navigator.clipboard.writeText(code).then(() => {
+          showToast(`Invitation code copied: ${code}`, 'success');
+        }).catch(() => {
+          showToast('Failed to copy code', 'error');
+        });
+      }
+
+      function addWidget(widgetType) {
+        showToast(`${widgetType.charAt(0).toUpperCase() + widgetType.slice(1)} widget coming soon!`, 'info');
+      }
+
+      // Load space on page load
+      document.addEventListener('DOMContentLoaded', loadSpaceDetails);
+    </script>
+  </body>
+</html>

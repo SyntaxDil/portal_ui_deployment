@@ -66,10 +66,80 @@ button.btn { cursor: pointer; border: 0; }
 .message.error { background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; }
 .message.info { background: rgba(59, 130, 246, 0.1); border: 1px solid #3b82f6; color: #3b82f6; }
 
+/* Toast Notifications */
+.toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: var(--panel);
+  color: var(--text);
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  border: 1px solid #1f2937;
+  transform: translateX(400px);
+  transition: transform 0.3s ease;
+  z-index: 1000;
+  max-width: 350px;
+  font-size: 0.95rem;
+}
+
+.toast.show {
+  transform: translateX(0);
+}
+
+.toast.toast-success {
+  border-left: 4px solid #22c55e;
+  background: linear-gradient(90deg, rgba(34, 197, 94, 0.1) 0%, var(--panel) 30%);
+}
+
+.toast.toast-error {
+  border-left: 4px solid #ef4444;
+  background: linear-gradient(90deg, rgba(239, 68, 68, 0.1) 0%, var(--panel) 30%);
+}
+
+.toast.toast-info {
+  border-left: 4px solid #3b82f6;
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, var(--panel) 30%);
+}
+
+/* User Profile in Header */
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  background: var(--panel);
+  border: 1px solid #1f2937;
+  border-radius: 10px;
+  margin-right: 1rem;
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.user-name {
+  font-weight: 500;
+  color: var(--text);
+}
+
 /* Responsive */
 @media (max-width: 860px) {
   .grid { grid-template-columns: 1fr; }
   .nav-toggle { display: inline-block; }
   .nav { position: absolute; top: 64px; right: 1rem; display: none; flex-direction: column; background: var(--panel); padding: 0.5rem; border: 1px solid #1f2937; border-radius: 8px; }
   .nav.open { display: flex; }
+  .user-profile { margin-right: 0.5rem; padding: 0.4rem 0.75rem; }
+  .user-name { display: none; }
+  .toast { right: 10px; left: 10px; max-width: none; }
 }

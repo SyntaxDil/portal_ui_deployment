@@ -3,32 +3,30 @@
 
 // Load user's spaces on page load
 document.addEventListener('DOMContentLoaded', async () => {
-    await checkAuth();
+    // checkAuth is handled by auth-new.js which is loaded before this script
+    const user = getLoggedInUser();
+    if (!user) {
+        window.location.href = './login.html';
+        return;
+    }
     await loadSpaces();
 });
 
-// Check if user is authenticated
-async function checkAuth() {
-    try {
-        const response = await fetch('/.netlify/functions/auth?action=status', {
-            credentials: 'include'
-        });
-        const data = await response.json();
-        
-        if (!data.success) {
-            window.location.href = './login.html';
-        }
-    } catch (error) {
-        console.error('Auth check failed:', error);
-        window.location.href = './login.html';
-    }
-}
-
 // Load all spaces owned by or accessible to user
 async function loadSpaces() {
+    const user = getLoggedInUser();
+    if (!user) {
+        window.location.href = './login.html';
+        return;
+    }
+    
     try {
         const response = await fetch('/.netlify/functions/spaces?action=list', {
-            credentials: 'include'
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ userId: user.id })
         });
         const data = await response.json();
         
@@ -75,19 +73,23 @@ function displaySpaces(spaces) {
         const isActive = space.is_active == 1 ? '' : '<span style="color: #ef4444;"> (Inactive)</span>';
         
         return `
-            <div class="space-card">
+            <div class="space-card" style="cursor: pointer;" onclick="window.location.href='./space-detail.html?slug=${space.space_slug}'">
                 <h3>${escapeHtml(space.name)}${isActive}</h3>
-                <p style="color: var(--muted);">${escapeHtml(space.description || 'No description')}</p>
+                <p style="color: var(--muted); margin: 0.5rem 0;">
+                    ${escapeHtml(space.description || 'No description')}
+                </p>
+                <p style="color: var(--muted); font-size: 0.85rem; font-family: monospace;">
+                    🔗 /${space.space_slug}
+                </p>
                 
                 <div style="margin: 1rem 0;">
                     <p style="margin: 0.5rem 0;">
                         👥 <strong>${space.member_count || 0}${maxMembersText}</strong> members
                     </p>
                     <p style="margin: 0.5rem 0;">
-                        🎫 Invitation Code: 
-                        <span class="invitation-code" id="code-${space.id}">${space.invitation_code}</span>
-                        <button onclick="copyCode('${space.invitation_code}')" style="margin-left: 0.5rem; padding: 0.25rem 0.5rem; font-size: 0.85rem; background: var(--accent); color: var(--accent-contrast); border: none; border-radius: 4px; cursor: pointer;">
-                            📋 Copy
+                        🎫 Invitation Link: 
+                        <button onclick="event.stopPropagation(); copyCode('${space.invitation_code}')" style="padding: 0.25rem 0.75rem; font-size: 0.85rem; background: var(--accent); color: var(--accent-contrast); border: none; border-radius: 4px; cursor: pointer;">
+                            🔗 Copy Link
                         </button>
                     </p>
                     ${expiresText}
@@ -133,6 +135,7 @@ document.getElementById('createSpaceForm').addEventListener('submit', async (e) 
     const formData = {
         name: document.getElementById('space_name').value.trim(),
         description: document.getElementById('space_description').value.trim() || null,
+        is_public: document.getElementById('is_public').checked,
         max_members: document.getElementById('max_members').value || null,
         code_expires: document.getElementById('code_expires').value || null
     };
@@ -142,29 +145,35 @@ document.getElementById('createSpaceForm').addEventListener('submit', async (e) 
     submitBtn.disabled = true;
     submitBtn.textContent = '🔄 Creating...';
     
+    const user = getLoggedInUser();
+    if (!user) {
+        showMessage('Please log in to create a space', 'error');
+        return;
+    }
+    
     try {
         const response = await fetch('/.netlify/functions/spaces', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ action: 'create', ...formData })
+            body: JSON.stringify({ action: 'create', userId: user.id, ...formData })
         });
         
         const data = await response.json();
         
         if (data.success) {
-            showMessage(`✅ Space created! Invitation code: ${data.invitation_code}`, 'success');
+            showMessage(`✅ Space created! Invitation code: ${data.data.invitation_code}`, 'success');
             hideCreateSpaceModal();
             await loadSpaces();
             
             // Auto-copy invitation code
-            copyCode(data.invitation_code);
+            copyCode(data.data.invitation_code);
         } else {
             showMessage(data.message || 'Failed to create space', 'error');
+            console.error('Space creation error:', data);
         }
     } catch (error) {
         console.error('Error creating space:', error);
-        showMessage('Network error. Please try again.', 'error');
+        showMessage(`Error: ${error.message || 'Network error. Please try again.'}`, 'error');
     } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = originalText;
@@ -173,17 +182,18 @@ document.getElementById('createSpaceForm').addEventListener('submit', async (e) 
 
 // Copy invitation code to clipboard
 function copyCode(code) {
-    navigator.clipboard.writeText(code).then(() => {
-        showMessage('📋 Invitation code copied: ' + code, 'success');
+    const invitationUrl = `${window.location.origin}/invite.html?code=${code}`;
+    navigator.clipboard.writeText(invitationUrl).then(() => {
+        showMessage('🔗 Invitation link copied!', 'success');
     }).catch(() => {
         // Fallback for older browsers
         const textarea = document.createElement('textarea');
-        textarea.value = code;
+        textarea.value = invitationUrl;
         document.body.appendChild(textarea);
         textarea.select();
         document.execCommand('copy');
         document.body.removeChild(textarea);
-        showMessage('📋 Invitation code copied: ' + code, 'success');
+        showMessage('🔗 Invitation link copied!', 'success');
     });
 }
 
@@ -205,9 +215,14 @@ async function viewSpaceMembers(spaceId, spaceName) {
     document.getElementById('viewMembersModal').classList.add('show');
     document.getElementById('membersList').innerHTML = '<p style="text-align: center; color: var(--muted);">Loading members...</p>';
     
+    const user = getLoggedInUser();
+    if (!user) return;
+    
     try {
         const response = await fetch(`/.netlify/functions/spaces?action=members&space_id=${spaceId}`, {
-            credentials: 'include'
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: user.id })
         });
         const data = await response.json();
         
@@ -260,12 +275,14 @@ async function regenerateCode(spaceId) {
         return;
     }
     
+    const user = getLoggedInUser();
+    if (!user) return;
+    
     try {
         const response = await fetch('/.netlify/functions/spaces', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ action: 'regenerate_code', space_id: spaceId })
+            body: JSON.stringify({ action: 'regenerate_code', userId: user.id, space_id: spaceId })
         });
         
         const data = await response.json();
@@ -292,12 +309,14 @@ async function toggleSpaceActive(spaceId, currentStatus) {
         return;
     }
     
+    const user = getLoggedInUser();
+    if (!user) return;
+    
     try {
         const response = await fetch('/.netlify/functions/spaces', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ action: 'toggle_active', space_id: spaceId })
+            body: JSON.stringify({ action: 'toggle_active', userId: user.id, space_id: spaceId })
         });
         
         const data = await response.json();

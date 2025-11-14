@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Space Invitation • Portal-UI</title>
+    <meta name="description" content="You've been invited to join a space" />
+    <link rel="icon" href="./assets/icons/favicon.ico" />
+    <link rel="stylesheet" href="./css/styles.css" />
+    <style>
+      .invite-container {
+        max-width: 600px;
+        margin: 4rem auto;
+        text-align: center;
+      }
+      .invite-card {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        border: 2px solid #22c55e;
+        border-radius: 16px;
+        padding: 3rem 2rem;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      }
+      .invite-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+      }
+      .invite-title {
+        font-size: 2rem;
+        margin: 0 0 1rem 0;
+        color: var(--accent);
+      }
+      .invite-code {
+        background: #0b1020;
+        border: 2px solid var(--accent);
+        padding: 1.5rem;
+        border-radius: 12px;
+        font-family: 'Courier New', monospace;
+        font-size: 1.5rem;
+        letter-spacing: 4px;
+        color: var(--accent);
+        margin: 2rem 0;
+        font-weight: bold;
+      }
+      .space-name {
+        font-size: 1.5rem;
+        color: var(--text);
+        margin: 1rem 0;
+      }
+      .invite-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin-top: 2rem;
+      }
+      .btn-large {
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        border-radius: 10px;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="container">
+        <a href="./" class="logo">🏔️ Portal-UI</a>
+        <nav class="nav">
+          <a href="./login.html">Login</a>
+          <a href="./register.html">Register</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="invite-container">
+      <div id="loadingState" class="invite-card">
+        <div class="invite-icon">⏳</div>
+        <h1 class="invite-title">Loading Invitation...</h1>
+        <p style="color: var(--muted);">Please wait</p>
+      </div>
+
+      <div id="inviteContent" class="invite-card" style="display: none;">
+        <div class="invite-icon">✉️</div>
+        <h1 class="invite-title">You're Invited!</h1>
+        <p style="color: var(--muted); font-size: 1.1rem;">You've been invited to join a space</p>
+        
+        <div class="space-name" id="spaceName">Loading...</div>
+        <p style="color: var(--muted);" id="spaceDescription"></p>
+        
+        <div class="invite-code" id="inviteCode">-</div>
+        
+        <div id="spaceDetails" style="text-align: left; background: #0b1020; padding: 1.5rem; border-radius: 8px; margin: 2rem 0;">
+          <p style="margin: 0.5rem 0; color: var(--muted);"><strong>Space Type:</strong> <span id="spaceType">Private</span></p>
+          <p style="margin: 0.5rem 0; color: var(--muted);"><strong>Members:</strong> <span id="memberCount">-</span></p>
+          <p style="margin: 0.5rem 0; color: var(--muted);" id="expiryInfo"></p>
+        </div>
+
+        <div class="invite-actions">
+          <button class="btn btn-large" id="joinBtn" style="background: #22c55e; color: #000;">
+            🎯 Accept Invitation & Join Space
+          </button>
+          <a href="./" class="btn btn-large" style="background: transparent; border: 1px solid #334155;">
+            Maybe Later
+          </a>
+        </div>
+      </div>
+
+      <div id="errorState" class="invite-card" style="display: none;">
+        <div class="invite-icon">❌</div>
+        <h1 class="invite-title">Invalid Invitation</h1>
+        <p style="color: var(--muted);" id="errorMessage">This invitation link is invalid or has expired.</p>
+        <div class="invite-actions">
+          <a href="./" class="btn btn-large">
+            Go to Homepage
+          </a>
+        </div>
+      </div>
+    </main>
+
+    <script src="./js/config.js"></script>
+    <script src="./js/auth-new.js"></script>
+    <script>
+      const urlParams = new URLSearchParams(window.location.search);
+      const invitationCode = urlParams.get('code');
+
+      if (!invitationCode) {
+        showError('No invitation code provided');
+      } else {
+        loadInvitation();
+      }
+
+      async function loadInvitation() {
+        try {
+          // For now, just show the code - we'll validate it when joining
+          document.getElementById('loadingState').style.display = 'none';
+          document.getElementById('inviteContent').style.display = 'block';
+          document.getElementById('inviteCode').textContent = invitationCode;
+          document.getElementById('spaceName').textContent = 'Space Invitation';
+          document.getElementById('spaceDescription').textContent = 'Join this space to collaborate with the team';
+          document.getElementById('spaceType').textContent = 'Private';
+          document.getElementById('memberCount').textContent = 'Multiple members';
+        } catch (error) {
+          console.error('Error loading invitation:', error);
+          showError('Failed to load invitation details');
+        }
+      }
+
+      function showError(message) {
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('inviteContent').style.display = 'none';
+        document.getElementById('errorState').style.display = 'block';
+        document.getElementById('errorMessage').textContent = message;
+      }
+
+      document.getElementById('joinBtn').addEventListener('click', async () => {
+        const user = getLoggedInUser();
+        
+        if (!user) {
+          // Save invitation code to localStorage and redirect to register
+          localStorage.setItem('pendingInvite', invitationCode);
+          showToast('Please register or login to join this space', 'info');
+          setTimeout(() => {
+            window.location.href = './register.html?redirect=invite';
+          }, 1500);
+          return;
+        }
+
+        // User is logged in - join the space
+        const btn = document.getElementById('joinBtn');
+        const originalText = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = '⏳ Joining...';
+
+        try {
+          const response = await fetch('/.netlify/functions/spaces', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'join',
+              userId: user.id,
+              invitation_code: invitationCode
+            })
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            showToast(`✅ Successfully joined ${data.data.space_name}!`, 'success');
+            setTimeout(() => {
+              window.location.href = './spaces.html';
+            }, 1500);
+          } else {
+            showToast(data.message || 'Failed to join space', 'error');
+            btn.disabled = false;
+            btn.textContent = originalText;
+          }
+        } catch (error) {
+          console.error('Error joining space:', error);
+          showToast('Network error. Please try again.', 'error');
+          btn.disabled = false;
+          btn.textContent = originalText;
+        }
+      });
+    </script>
+  </body>
+</html>

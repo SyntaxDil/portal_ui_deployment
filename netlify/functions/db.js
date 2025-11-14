@@ -1,5 +1,5 @@
 // Database helper for Netlify Functions
-// Connects to Neon Postgres using environment variables
+// Connects to Neon PostgreSQL using environment variables
 
 const { neon } = require('@neondatabase/serverless');
 
