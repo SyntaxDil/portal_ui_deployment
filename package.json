@@ -1,0 +1,14 @@
+{
+  "name": "portal-ui-static",
+  "version": "1.0.0",
+  "description": "Portal UI Static Site with Netlify Functions",
+  "private": true,
+  "dependencies": {
+    "@netlify/functions": "^2.8.1",
+    "bcryptjs": "^2.4.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"No tests configured\""
+  }
+}
