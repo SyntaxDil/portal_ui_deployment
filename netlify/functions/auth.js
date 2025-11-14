@@ -2,9 +2,7 @@
 // Handles user registration, login, logout, and session management
 
 const bcrypt = require('bcryptjs');
-
-// In-memory session store (upgrade to Redis for production)
-const sessions = new Map();
+const { getDb } = require('./db');
 
 // Helper functions
 function jsonResponse(statusCode, success, message, data = null) {
@@ -40,11 +38,29 @@ function generateToken(length = 32) {
   return result;
 }
 
-// Database helper (will connect to Netlify Postgres)
-async function getDbClient() {
-  // TODO: Connect to Netlify Postgres once configured
-  // For now, return mock client
-  throw new Error('Database not yet configured. Please set up Netlify Postgres.');
+function getClientIP(event) {
+  return event.headers['x-forwarded-for']?.split(',')[0] || 
+         event.headers['client-ip'] || 
+         '0.0.0.0';
+}
+
+async function checkRateLimit(sql, email, ip) {
+  const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
+  const attempts = await sql`
+    SELECT COUNT(*) as count 
+    FROM login_attempts 
+    WHERE (email = ${email} OR ip_address = ${ip}) 
+    AND success = false 
+    AND attempted_at > ${fifteenMinutesAgo}
+  `;
+  return attempts[0].count < 5;
+}
+
+async function logLoginAttempt(sql, email, ip, success) {
+  await sql`
+    INSERT INTO login_attempts (email, ip_address, success) 
+    VALUES (${email}, ${ip}, ${success})
+  `;
 }
 
 exports.handler = async (event, context) => {
@@ -54,11 +70,9 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    // Parse action from query parameters
+    const sql = getDb();
     const params = new URLSearchParams(event.rawQuery || '');
     const action = params.get('action');
-    
-    // Parse request body
     const body = event.body ? JSON.parse(event.body) : {};
 
     switch (action) {
@@ -82,22 +96,88 @@ exports.handler = async (event, context) => {
           return jsonResponse(400, false, 'Full name is required');
         }
 
-        // TODO: Database operations
-        // 1. Check if email exists
-        // 2. Validate invitation code if provided
-        // 3. Hash password with bcrypt
-        // 4. Insert user record
-        // 5. Create user profile
-        // 6. Add to space if invitation code valid
+        // Check if email exists
+        const existingUser = await sql`
+          SELECT id FROM users WHERE email = ${email}
+        `;
+        
+        if (existingUser.length > 0) {
+          return jsonResponse(409, false, 'Email already registered');
+        }
 
-        // Mock response for now
+        // Validate invitation code if provided
+        let spaceId = null;
+        if (invitation_code) {
+          const codeUpper = invitation_code.toUpperCase().trim();
+          const space = await sql`
+            SELECT s.id, s.max_members, s.code_expires_at, s.is_active,
+                   COUNT(sm.user_id) as member_count
+            FROM spaces s
+            LEFT JOIN space_members sm ON s.id = sm.space_id
+            WHERE s.invitation_code = ${codeUpper}
+            GROUP BY s.id, s.max_members, s.code_expires_at, s.is_active
+          `;
+
+          if (space.length === 0) {
+            return jsonResponse(404, false, 'Invalid invitation code');
+          }
+
+          if (!space[0].is_active) {
+            return jsonResponse(410, false, 'This space is no longer active');
+          }
+
+          if (space[0].code_expires_at && new Date(space[0].code_expires_at) < new Date()) {
+            return jsonResponse(410, false, 'Invitation code has expired');
+          }
+
+          if (space[0].max_members && parseInt(space[0].member_count) >= space[0].max_members) {
+            return jsonResponse(409, false, 'Space has reached maximum member limit');
+          }
+
+          spaceId = space[0].id;
+        }
+
+        // Hash password
         const passwordHash = await bcrypt.hash(password, 12);
         const verificationToken = generateToken();
 
-        return jsonResponse(200, true, 'Registration successful. Database integration pending.', {
-          user_id: 1, // Mock ID
+        // Create user
+        const newUser = await sql`
+          INSERT INTO users (email, password_hash, full_name, verification_token, must_change_password)
+          VALUES (${email}, ${passwordHash}, ${full_name}, ${verificationToken}, true)
+          RETURNING id
+        `;
+
+        const userId = newUser[0].id;
+
+        // Create user profile
+        await sql`
+          INSERT INTO user_profiles (user_id)
+          VALUES (${userId})
+        `;
+
+        // Add to space if invitation code was used
+        if (spaceId) {
+          await sql`
+            INSERT INTO space_members (space_id, user_id, role)
+            VALUES (${spaceId}, ${userId}, 'member')
+          `;
+
+          await sql`
+            INSERT INTO invitation_usage (invitation_code, space_id, used_by, used_at, ip_address)
+            VALUES (${invitation_code.toUpperCase()}, ${spaceId}, ${userId}, NOW(), ${getClientIP(event)})
+          `;
+        }
+
+        let message = 'Registration successful. Please check your email to verify your account.';
+        if (spaceId) {
+          message += ' You have been added to the space.';
+        }
+
+        return jsonResponse(200, true, message, {
+          user_id: userId,
           email: email,
-          space_joined: !!invitation_code
+          space_joined: !!spaceId
         });
 
       case 'login':
@@ -108,62 +188,82 @@ exports.handler = async (event, context) => {
         const loginEmail = body.email?.trim() || '';
         const loginPassword = body.password || '';
         const rememberMe = body.remember_me || false;
+        const ip = getClientIP(event);
 
-        // TODO: Database operations
-        // 1. Get user by email
-        // 2. Verify password with bcrypt.compare()
-        // 3. Check if account is active
-        // 4. Log login attempt
-        // 5. Create session
+        // Rate limiting
+        if (!(await checkRateLimit(sql, loginEmail, ip))) {
+          await logLoginAttempt(sql, loginEmail, ip, false);
+          return jsonResponse(429, false, 'Too many failed attempts. Please try again in 15 minutes.');
+        }
 
-        // Mock response
-        return jsonResponse(200, true, 'Login successful. Database integration pending.', {
+        // Get user
+        const users = await sql`
+          SELECT id, email, password_hash, full_name, is_active, email_verified, must_change_password
+          FROM users
+          WHERE email = ${loginEmail}
+        `;
+
+        if (users.length === 0) {
+          await logLoginAttempt(sql, loginEmail, ip, false);
+          return jsonResponse(401, false, 'Invalid email or password');
+        }
+
+        const user = users[0];
+
+        // Verify password
+        const passwordMatch = await bcrypt.compare(loginPassword, user.password_hash);
+        if (!passwordMatch) {
+          await logLoginAttempt(sql, loginEmail, ip, false);
+          return jsonResponse(401, false, 'Invalid email or password');
+        }
+
+        if (!user.is_active) {
+          return jsonResponse(403, false, 'Account is disabled. Please contact support.');
+        }
+
+        // Successful login
+        await logLoginAttempt(sql, loginEmail, ip, true);
+
+        // Check if password change is required
+        if (user.must_change_password) {
+          const tempToken = generateToken();
+          
+          return jsonResponse(200, false, 'Password change required', {
+            redirect: `./change-password.html?user_id=${user.id}&temp_token=${tempToken}`,
+            requires_password_change: true
+          });
+        }
+
+        // Update last login
+        await sql`
+          UPDATE users SET last_login = NOW() WHERE id = ${user.id}
+        `;
+
+        // Create session if remember me
+        if (rememberMe) {
+          const sessionToken = generateToken();
+          const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+
+          await sql`
+            INSERT INTO sessions (user_id, session_token, ip_address, user_agent, expires_at)
+            VALUES (${user.id}, ${sessionToken}, ${ip}, ${event.headers['user-agent'] || ''}, ${expiresAt})
+          `;
+        }
+
+        return jsonResponse(200, true, 'Login successful', {
           user: {
-            id: 1,
-            email: loginEmail,
-            full_name: 'Mock User',
-            email_verified: false
+            id: user.id,
+            email: user.email,
+            full_name: user.full_name,
+            email_verified: user.email_verified
           }
         });
 
       case 'logout':
-        // TODO: Clear session from database/store
         return jsonResponse(200, true, 'Logged out successfully');
 
       case 'status':
-        // TODO: Check session validity
         return jsonResponse(401, false, 'Not authenticated');
-
-      case 'change_password':
-        if (event.httpMethod !== 'POST') {
-          return jsonResponse(405, false, 'Method not allowed');
-        }
-
-        const { user_id, temp_token, current_password, new_password } = body;
-
-        // Validation
-        if (new_password.length < 8) {
-          return jsonResponse(400, false, 'New password must be at least 8 characters');
-        }
-
-        // Password strength check
-        if (!/[A-Z]/.test(new_password) ||
-            !/[a-z]/.test(new_password) ||
-            !/[0-9]/.test(new_password) ||
-            !/[!@#$%^&*(),.?":{}|<>]/.test(new_password)) {
-          return jsonResponse(400, false, 'Password must include uppercase, lowercase, number, and special character');
-        }
-
-        // TODO: Database operations
-        // 1. Verify temp token
-        // 2. Verify current password
-        // 3. Hash new password
-        // 4. Update user record
-        // 5. Clear must_change_password flag
-
-        return jsonResponse(200, true, 'Password changed successfully. Database integration pending.', {
-          redirect: './dashboard.html'
-        });
 
       default:
         return jsonResponse(400, false, 'Invalid action');
