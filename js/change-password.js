@@ -147,7 +147,7 @@ document.getElementById('changePasswordForm').addEventListener('submit', async (
     submitBtn.textContent = '🔄 Changing password...';
     
     try {
-        const response = await fetch('./api/auth.php', {
+        const response = await fetch('/.netlify/functions/auth', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',

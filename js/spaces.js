@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Check if user is authenticated
 async function checkAuth() {
     try {
-        const response = await fetch('./api/auth.php?action=status', {
+        const response = await fetch('/.netlify/functions/auth?action=status', {
             credentials: 'include'
         });
         const data = await response.json();
@@ -27,7 +27,7 @@ async function checkAuth() {
 // Load all spaces owned by or accessible to user
 async function loadSpaces() {
     try {
-        const response = await fetch('./api/spaces.php?action=list', {
+        const response = await fetch('/.netlify/functions/spaces?action=list', {
             credentials: 'include'
         });
         const data = await response.json();
@@ -143,7 +143,7 @@ document.getElementById('createSpaceForm').addEventListener('submit', async (e) 
     submitBtn.textContent = '🔄 Creating...';
     
     try {
-        const response = await fetch('./api/spaces.php', {
+        const response = await fetch('/.netlify/functions/spaces', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
@@ -206,7 +206,7 @@ async function viewSpaceMembers(spaceId, spaceName) {
     document.getElementById('membersList').innerHTML = '<p style="text-align: center; color: var(--muted);">Loading members...</p>';
     
     try {
-        const response = await fetch(`./api/spaces.php?action=members&space_id=${spaceId}`, {
+        const response = await fetch(`/.netlify/functions/spaces?action=members&space_id=${spaceId}`, {
             credentials: 'include'
         });
         const data = await response.json();
@@ -261,7 +261,7 @@ async function regenerateCode(spaceId) {
     }
     
     try {
-        const response = await fetch('./api/spaces.php', {
+        const response = await fetch('/.netlify/functions/spaces', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
@@ -293,7 +293,7 @@ async function toggleSpaceActive(spaceId, currentStatus) {
     }
     
     try {
-        const response = await fetch('./api/spaces.php', {
+        const response = await fetch('/.netlify/functions/spaces', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
@@ -317,7 +317,7 @@ async function toggleSpaceActive(spaceId, currentStatus) {
 // Logout function
 async function logout() {
     try {
-        await fetch('./api/auth.php?action=logout', {
+        await fetch('/.netlify/functions/auth?action=logout', {
             credentials: 'include'
         });
         window.location.href = './login.html';

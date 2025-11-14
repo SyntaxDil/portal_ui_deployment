@@ -1,7 +1,8 @@
 // Authentication JavaScript
 // Handles login, register, logout, and session management
 
-const API_BASE = '/api/auth.php';
+// Use Netlify Functions instead of PHP
+const API_BASE = '/.netlify/functions/auth';
 
 // Store last error for bug reporting
 let lastError = null;
@@ -229,7 +230,7 @@ if (registerForm) {
     codeValidation.style.color = 'var(--muted)';
     
     try {
-      const response = await fetch(`./api/spaces.php?action=validate_code&code=${encodeURIComponent(code)}`, {
+      const response = await fetch(`/.netlify/functions/spaces?action=validate_code&code=${encodeURIComponent(code)}`, {
         credentials: 'include'
       });
       const data = await response.json();
